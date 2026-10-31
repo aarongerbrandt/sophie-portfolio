@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sophie Bryan Portfolio</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #20242b;
+      background: #f5f6f8;
+    }
+    header { padding: 32px 6vw 12px; text-align: center; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+    header p { margin: 0; color: #68707c; }
+    main { width: min(1120px, 90%); margin: 24px auto 56px; }
+
+    /* Featured image carousel */
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      background: #17191d;
+      box-shadow: 0 12px 30px rgba(20, 30, 45, .12);
+    }
+    .slides { display: flex; transition: transform .45s ease; }
+    .slide { min-width: 100%; position: relative; height: clamp(240px, 48vw, 490px); }
+    .slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .slide::after {
+      content: ""; position: absolute; inset: 35% 0 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.68));
+    }
+    .slide-caption {
+      position: absolute; z-index: 1; left: 7%; bottom: 9%;
+      color: white; font-size: clamp(1.3rem, 3vw, 2.2rem); font-weight: 700;
+    }
+    .carousel-button {
+      position: absolute; z-index: 2; top: 50%; transform: translateY(-50%);
+      width: 42px; height: 42px; border: 0; border-radius: 50%;
+      color: #20242b; background: rgba(255,255,255,.9);
+      font-size: 1.5rem; cursor: pointer;
+    }
+    .carousel-button:hover { background: white; }
+    .prev { left: 16px; } .next { right: 16px; }
+    .dots {
+      position: absolute; z-index: 2; bottom: 18px; right: 7%;
+      display: flex; gap: 8px;
+    }
+    .dot {
+      width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%;
+      background: rgba(255,255,255,.55); cursor: pointer;
+    }
+    .dot.active { background: white; transform: scale(1.25); }
+
+    /* Image cards */
+    .section-heading { margin: 42px 0 18px; font-size: 1.5rem; }
+    .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .image-card {
+      position: relative; min-height: 260px; overflow: hidden;
+      border-radius: 14px; background: #dce1e8;
+      box-shadow: 0 6px 18px rgba(20,30,45,.08);
+      isolation: isolate;
+    }
+    .image-card img {
+      width: 100%; height: 100%; min-height: 260px; object-fit: cover;
+      display: block; transition: transform .45s ease;
+    }
+    .card-title {
+      position: absolute; left: 18px; bottom: 16px; z-index: 1;
+      margin: 0; color: white; font-size: 1.25rem;
+      text-shadow: 0 2px 8px rgba(0,0,0,.55);
+      transition: opacity .25s ease;
+    }
+    .card-overlay {
+      position: absolute; inset: 0; z-index: 2; display: flex;
+      flex-direction: column; justify-content: flex-end; padding: 22px;
+      color: white; opacity: 0; background: rgba(12,18,28,.78);
+      transition: opacity .3s ease;
+    }
+    .card-overlay h3 { margin: 0 0 8px; font-size: 1.3rem; }
+    .card-overlay p { margin: 0; line-height: 1.5; color: #e7eaf0; }
+    .image-card:hover img, .image-card:focus-within img { transform: scale(1.07); }
+    .image-card:hover .card-overlay, .image-card:focus-within .card-overlay { opacity: 1; }
+    .image-card:hover .card-title, .image-card:focus-within .card-title { opacity: 0; }
+
+    @media (max-width: 760px) {
+      .card-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .card-grid { grid-template-columns: 1fr; }
+      .image-card, .image-card img { min-height: 230px; }
+      .carousel-button { width: 36px; height: 36px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sophie Bryan</h1>
+    <p>Capturing the Beauty of Nature.</p>
+  </header>
+
+  <main>
+    <section class="carousel" aria-label="Featured images">
+      <div class="slides" id="slides"></div>
+      <button class="carousel-button prev" id="prev" aria-label="Previous slide">&#8249;</button>
+      <button class="carousel-button next" id="next" aria-label="Next slide">&#8250;</button>
+      <div class="dots" id="dots" aria-label="Choose a slide"></div>
+    </section>
+
+    <h2 class="section-heading">Learn more about the inhabitants!</h2>
+    <section class="card-grid" id="cardGrid" aria-label="Image cards"></section>
+  </main>
+
+  <script>
+    /*
+      EDIT THIS JSON LIST TO CHANGE THE GALLERY.
+
+      Each item can have:
+        image       - image URL
+        title       - title shown on the slide/card
+        description - text revealed when a card is hovered or focused
+    */
+    const carouselItems = [
+      {
+        "image": "media/carousel/fence.jfif",
+        "title": "Just an empty fence",
+        "description": "For now...",
+      },
+      {
+        "image": "https://images.unsplash.com/photo-1606567595334-d39972c85dbe?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
+        "title": "This is a bird",
+        "description": "Birdy bird bird.",
+      },
+      {
+        "image": "https://plus.unsplash.com/premium_photo-1724864863815-1469c8b74711?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
+        "title": "This is also a bird",
+        "description": "Birdy bird bird bird bird",
+      }
+    ];
+
+    const animalCardItems = [
+      {
+        "image": "media/cards/BeautifulSibia.jfif",
+        "title": "Beautiful Sibia",
+        "description": "A silky blue-gray sibia with a dark face found in foothill and montane evergreen forests. As with other sibias, travels through the upper levels of the forest in flocks.",
+      },
+      {
+        "image": "media/cards/RedBeardedBeeEater.jfif",
+        "title": "Red-bearded Bee-eater",
+        "description": "Unmistakable leaf-green bee-eater of lowland and foothill forests. Namesake “beard” actually goes from the crown all the way down to the belly.",
+      },
+      {
+        "image": "media/cards/RedLoredWhistler.jfif",
+        "title": "Red-Lored Whistler",
+        "description": "Chunky gray songbird with a heavy black bill found in dry forest and bushland in parts of semi-arid southern Australia.",
+      },
+      {
+        "image": "media/cards/StriatedGrassbird.jfif",
+        "title": "Striated Grassbird",
+        "description": "Streaky brown bird of fields, scrubby edge, and dense thickets. This large but retiring warbler is most often seen as a flash of chestnut rump and long, trailing tail as it flushes from close proximity",
+      },
+    ];
+
+    const slidesContainer = document.getElementById("slides");
+    const dotsContainer = document.getElementById("dots");
+    const cardGrid = document.getElementById("cardGrid");
+    let currentSlide = 0;
+
+    // Build carousel slides from the carouselItems list
+    carouselItems.forEach(item => {
+      const slide = document.createElement("div");
+      slide.className = "slide";
+
+      const image = document.createElement("img");
+      image.src = item.image;
+      image.alt = item.title;
+
+      const caption = document.createElement("div");
+      caption.className = "slide-caption";
+      caption.textContent = item.title;
+
+      slide.append(image, caption);
+      slidesContainer.appendChild(slide);
+    });
+
+    // Build one image card for every item in the animalCardItems list
+    animalCardItems.forEach(item => {
+      const card = document.createElement("article");
+      card.className = "image-card";
+      card.tabIndex = 0;
+
+      const image = document.createElement("img");
+      image.src = item.image;
+      image.alt = item.title;
+      image.loading = "lazy";
+
+      const title = document.createElement("h3");
+      title.className = "card-title";
+      title.textContent = item.title;
+
+      const overlay = document.createElement("div");
+      overlay.className = "card-overlay";
+
+      const overlayTitle = document.createElement("h3");
+      overlayTitle.textContent = item.title;
+
+      const description = document.createElement("p");
+      description.textContent = item.description || "";
+
+      overlay.append(overlayTitle, description);
+      card.append(image, title, overlay);
+      cardGrid.appendChild(card);
+    });
+
+    // Set up carousel controls and dots.
+    function showSlide(index) {
+      if (carouselItems.length === 0) return;
+
+      currentSlide = (index + carouselItems.length) % carouselItems.length;
+      slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+      [...dotsContainer.children].forEach((dot, i) => {
+        dot.classList.toggle("active", i === currentSlide);
+        dot.setAttribute("aria-current", i === currentSlide ? "true" : "false");
+      });
+    }
+
+    if (carouselItems.length > 0) {
+      carouselItems.forEach((item, index) => {
+        const dot = document.createElement("button");
+        dot.className = "dot";
+        dot.type = "button";
+        dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+        dot.addEventListener("click", () => showSlide(index));
+        dotsContainer.appendChild(dot);
+      });
+
+      document.getElementById("prev").addEventListener("click", () => showSlide(currentSlide - 1));
+      document.getElementById("next").addEventListener("click", () => showSlide(currentSlide + 1));
+      showSlide(0);
+    } else {
+      document.querySelector(".carousel").hidden = true;
+    }
+  </script>
+</body>
+</html>
